@@ -5,7 +5,9 @@ const API = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 15000,
+  timeout: 60000, 
 });
 
-export const identifyContact = (data) => API.post("/identify", data);
+export const identifyContact = async (data) => {
+  return await API.post("/identify", data);
+};
