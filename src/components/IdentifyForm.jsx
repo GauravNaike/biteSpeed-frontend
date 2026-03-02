@@ -1,69 +1,78 @@
 import { useState } from "react";
-import toast from "react-hot-toast";
+import { identifyContact } from "../api/api";
+import { toast } from "react-toastify";
 
-function IdentifyForm({ onSubmit, loading }) {
+const IdentifyForm = ({ setResult }) => {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validation
     if (!email && !phoneNumber) {
-      toast.error("Please provide at least email or phone number.");
+      toast.warning("Please enter at least Email or Phone Number");
       return;
     }
 
-    onSubmit({ email, phoneNumber });
-  };
+    setLoading(true);
 
-  const handleClear = () => {
-    setEmail("");
-    setPhoneNumber("");
+    try {
+      const response = await identifyContact({
+        email: email || null,
+        phoneNumber: phoneNumber || null,
+      });
+
+      setResult(response.data);
+
+      toast.success("Contact identified successfully!");
+    } catch (error) {
+      console.error("Error:", error);
+
+      if (!error.response) {
+        toast.error(
+          "Server is waking up (free hosting). Please wait up to 60 seconds and try again."
+        );
+      } else if (error.response.status >= 500) {
+        toast.error("Server error occurred. Please try again later.");
+      } else if (error.response.status >= 400) {
+        toast.error("Invalid request. Please check your input.");
+      } else {
+        toast.error("Something went wrong.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <>
+    <form onSubmit={handleSubmit} className="space-y-4">
       <input
         type="email"
-        placeholder="Email"
-        className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+        placeholder="Enter Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        className="w-full p-3 border rounded-lg"
       />
 
       <input
         type="text"
-        placeholder="Phone Number"
-        className="w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+        placeholder="Enter Phone Number"
         value={phoneNumber}
         onChange={(e) => setPhoneNumber(e.target.value)}
+        className="w-full p-3 border rounded-lg"
       />
 
       <button
+        type="submit"
         disabled={loading}
-        onClick={handleSubmit}
-        className={`w-full p-3 rounded-lg text-white transition flex items-center justify-center ${
-          loading
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700"
-        }`}
+        className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
       >
-        {loading ? (
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            Processing...
-          </div>
-        ) : (
-          "Identify"
-        )}
+        {loading ? "Processing..." : "Identify"}
       </button>
-
-      <button
-        onClick={handleClear}
-        className="w-full mt-3 bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition"
-      >
-        Clear
-      </button>
-    </>
+    </form>
   );
-}
+};
 
 export default IdentifyForm;
