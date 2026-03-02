@@ -2,26 +2,36 @@ import { useState } from "react";
 import { identifyContact } from "./api/api";
 import IdentifyForm from "./components/IdentifyForm";
 import ResultCard from "./components/ResultCard";
+import toast from "react-hot-toast";
 
 function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [responseTime, setResponseTime] = useState(null);
 
   const handleIdentify = async (data) => {
     try {
       setLoading(true);
-      setError("");
+      setResult(null);
+      setResponseTime(null);
+
+      const start = Date.now();
 
       const response = await identifyContact(data);
+
+      const end = Date.now();
+      setResponseTime(end - start);
+
       setResult(response.data.contact);
+
+      toast.success("Contact identified successfully!");
     } catch (err) {
       if (err.response) {
-        setError(`Server Error: ${err.response.status}`);
+        toast.error(`Server Error: ${err.response.status}`);
       } else if (err.request) {
-        setError("Server not responding. Please try again.");
+        toast.error("Server not responding. Please try again.");
       } else {
-        setError("Unexpected error occurred.");
+        toast.error("Unexpected error occurred.");
       }
     } finally {
       setLoading(false);
@@ -29,7 +39,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600 p-4">
+      
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md transform transition hover:scale-105">
         <h1 className="text-2xl font-bold text-center mb-6">
           Identity Reconciliation
@@ -38,17 +49,21 @@ function App() {
         <IdentifyForm
           onSubmit={handleIdentify}
           loading={loading}
-          setError={setError}
         />
 
-        {error && (
-          <p className="text-red-500 mt-4 text-center font-medium">
-            {error}
+        <ResultCard result={result} />
+
+        {responseTime && (
+          <p className="text-sm text-gray-500 mt-4 text-center">
+            Response time: {responseTime} ms
           </p>
         )}
-
-        <ResultCard result={result} />
       </div>
+
+      <p className="text-white mt-6 text-sm opacity-80 text-center">
+        Built by Gaurav Naike • React + Spring Boot + PostgreSQL
+      </p>
+
     </div>
   );
 }
