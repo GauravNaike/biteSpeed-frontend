@@ -2,7 +2,7 @@ import { useState } from "react";
 import { identifyContact } from "./api/api";
 import IdentifyForm from "./components/IdentifyForm";
 import ResultCard from "./components/ResultCard";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 function App() {
   const [result, setResult] = useState(null);
@@ -26,7 +26,11 @@ function App() {
 
       toast.success("Contact identified successfully!");
     } catch (err) {
-      if (err.response) {
+      if (err.code === "ECONNABORTED") {
+        toast.error(
+          "Server is waking up (free hosting). Please wait up to 60 seconds and try again."
+        );
+      } else if (err.response) {
         toast.error(`Server Error: ${err.response.status}`);
       } else if (err.request) {
         toast.error("Server not responding. Please try again.");
@@ -40,7 +44,6 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600 p-4">
-      
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md transform transition hover:scale-105">
         <h1 className="text-2xl font-bold text-center mb-6">
           Identity Reconciliation
@@ -63,7 +66,6 @@ function App() {
       <p className="text-white mt-6 text-sm opacity-80 text-center">
         Built by Gaurav Naike • React + Spring Boot + PostgreSQL
       </p>
-
     </div>
   );
 }
