@@ -1,7 +1,11 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://bitespeed-backend-e8s5.onrender.com", 
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 15000,
 });
 
 export const identifyContact = (data) => API.post("/identify", data);

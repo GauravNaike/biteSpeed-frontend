@@ -1,11 +1,22 @@
 import { useState } from "react";
 
-function IdentifyForm({ onSubmit, loading }) {
+function IdentifyForm({ onSubmit, loading, setError }) {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
   const handleSubmit = () => {
+    if (!email && !phoneNumber) {
+      setError("Please provide at least email or phone number.");
+      return;
+    }
+
     onSubmit({ email, phoneNumber });
+  };
+
+  const handleClear = () => {
+    setEmail("");
+    setPhoneNumber("");
+    setError("");
   };
 
   return (
@@ -27,10 +38,22 @@ function IdentifyForm({ onSubmit, loading }) {
       />
 
       <button
+        disabled={loading}
         onClick={handleSubmit}
-        className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
+        className={`w-full p-3 rounded-lg text-white transition ${
+          loading
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700"
+        }`}
       >
         {loading ? "Processing..." : "Identify"}
+      </button>
+
+      <button
+        onClick={handleClear}
+        className="w-full mt-3 bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition"
+      >
+        Clear
       </button>
     </>
   );
